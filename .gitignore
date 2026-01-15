@@ -1,0 +1,25 @@
+# Vim-plug installed plugins (install with :PlugInstall)
+plugged/
+
+# Vim auto-generated files
+.netrwhist
+undodir/
+
+# Swap, backup, undo files (should be disabled in vimrc, but just in case)
+*.swp
+*.swo
+*~
+*.bak
+
+# Session files
+Session.vim
+
+# View files
+view/
+
+# Tags
+tags
+tags.*
+
+# Local/machine-specific overrides (create this file for machine-specific settings)
+vimrc.local
