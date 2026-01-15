@@ -202,78 +202,141 @@ let g:gitgutter_sign_removed = '-'
 let g:python_highlight_all = 1
 
 " --- Startify (Start Screen with Cheatsheet) ---
-let g:startify_custom_header = []  " No ASCII art/logo
+let g:startify_custom_header = []
 let g:startify_lists = [
     \ { 'type': 'files',     'header': ['   Recent Files'] },
     \ { 'type': 'dir',       'header': ['   Current Directory: '. getcwd()] },
     \ { 'type': 'bookmarks', 'header': ['   Bookmarks'] },
     \ ]
 let g:startify_bookmarks = [
-    \ { 'v': '~/.vimrc' },
+    \ { 'v': '~/.vim/vimrc' },
     \ { 'z': '~/.zshrc' },
     \ ]
 let g:startify_files_number = 8
 let g:startify_padding_left = 3
 let g:startify_enable_special = 0
+let g:startify_custom_footer = []
 
-" Cheatsheet displayed at the bottom
-let g:startify_custom_footer = [
+" Cheatsheet content for side panel
+let g:cheatsheet_content = [
+    \ 'CHEATSHEET              Leader = Space',
+    \ '══════════════════════════════════════',
     \ '',
-    \ '   ══════════════════════════════════════════════════════════════════════════════',
-    \ '   CHEATSHEET                                                     Leader = Space',
-    \ '   ══════════════════════════════════════════════════════════════════════════════',
+    \ 'FUZZY FINDING (fzf)',
+    \ '──────────────────────────────────────',
+    \ 'Space f    Find files',
+    \ 'Space b    Switch buffer',
+    \ 'Space /    Search in project (rg)',
+    \ 'Space g    Git files only',
+    \ 'Space h    File history',
+    \ 'Space :    Command history',
+    \ 'Ctrl-p     Find files (alt)',
     \ '',
-    \ '   FUZZY FINDING (fzf)                    FILE EXPLORER',
-    \ '   ─────────────────────────────────────  ─────────────────────────────────────',
-    \ '   Space f      Find files                Space e      Toggle NERDTree',
-    \ '   Space b      Switch buffer             Space n      Find current file in tree',
-    \ '   Space /      Search in project (rg)',
-    \ '   Space g      Git files only            BUFFERS & WINDOWS',
-    \ '   Space h      File history              ─────────────────────────────────────',
-    \ '   Space :      Command history           Shift-L      Next buffer',
-    \ '   Space l      Search lines              Shift-H      Previous buffer',
-    \ '   Ctrl-p       Find files (alt)          Space bd     Delete buffer',
-    \ '                                          Ctrl-h/j/k/l Navigate windows',
-    \ '   EDITING                                Ctrl-Arrows  Resize windows',
-    \ '   ─────────────────────────────────────',
-    \ '   gcc          Comment/uncomment line    GENERAL',
-    \ '   gc           Comment selection         ─────────────────────────────────────',
-    \ '   cs"''         Change " to '' (surround)  Space w      Save file',
-    \ '   ds"          Delete surrounding "      Space q      Quit',
-    \ '   ysiw"        Surround word with "      Space x      Save and quit',
-    \ '   S"           Surround selection        Space Space  Clear search highlight',
-    \ '   jk           Exit insert mode          Space sv     Reload vimrc',
-    \ '   < / >        Indent (keeps selection)',
-    \ '                                          CLIPBOARD',
-    \ '   NAVIGATION                             ─────────────────────────────────────',
-    \ '   ─────────────────────────────────────  Space y      Yank to system clipboard',
-    \ '   s{char}{char} Jump to any 2 chars      Space p      Paste from clipboard',
-    \ '   Space j/k    EasyMotion down/up        Space Y      Yank line to clipboard',
-    \ '   Ctrl-d/u     Half-page down/up',
-    \ '   n / N        Next/prev search (centered)',
-    \ '                                          QUICKFIX LIST',
-    \ '   GIT (fugitive)                         ─────────────────────────────────────',
-    \ '   ─────────────────────────────────────  ]q           Next quickfix item',
-    \ '   Space gs     Git status                [q           Previous quickfix item',
-    \ '   Space gd     Git diff',
-    \ '   Space gb     Git blame                 LINTING (ALE)',
-    \ '   Space gl     Git log                   ─────────────────────────────────────',
-    \ '   ]c / [c      Next/prev git hunk        Space af     Fix file (auto-format)',
-    \ '                                          ]a           Next lint error',
-    \ '   VISUAL MODE                            [a           Previous lint error',
-    \ '   ─────────────────────────────────────',
-    \ '   J / K        Move selection down/up    VIM BASICS REMINDER',
-    \ '   < / >        Indent and reselect       ─────────────────────────────────────',
-    \ '                                          ciw          Change inner word',
-    \ '                                          ci"          Change inside quotes',
-    \ '                                          vip          Select paragraph',
-    \ '                                          =            Auto-indent selection',
-    \ '                                          .            Repeat last command',
+    \ 'FILE EXPLORER',
+    \ '──────────────────────────────────────',
+    \ 'Space e    Toggle NERDTree',
+    \ 'Space n    Find current file in tree',
     \ '',
-    \ '   ══════════════════════════════════════════════════════════════════════════════',
-    \ '   Press Space ? anytime to show this cheatsheet',
-    \ '   ══════════════════════════════════════════════════════════════════════════════',
+    \ 'BUFFERS & WINDOWS',
+    \ '──────────────────────────────────────',
+    \ 'Shift-L    Next buffer',
+    \ 'Shift-H    Previous buffer',
+    \ 'Space bd   Delete buffer',
+    \ 'Ctrl-hjkl  Navigate windows',
+    \ 'Ctrl-Arrows Resize windows',
+    \ '',
+    \ 'EDITING',
+    \ '──────────────────────────────────────',
+    \ 'gcc        Comment/uncomment line',
+    \ 'gc         Comment selection',
+    \ 'cs"''       Change " to '' (surround)',
+    \ 'ds"        Delete surrounding "',
+    \ 'ysiw"      Surround word with "',
+    \ 'S"         Surround selection (visual)',
+    \ 'jk         Exit insert mode',
+    \ '< / >      Indent (keeps selection)',
+    \ '',
+    \ 'NAVIGATION',
+    \ '──────────────────────────────────────',
+    \ 's{char}{char}  Jump to 2 chars',
+    \ 'Space j/k  EasyMotion down/up',
+    \ 'Ctrl-d/u   Half-page down/up (centered)',
+    \ 'n / N      Next/prev search (centered)',
+    \ '',
+    \ 'GIT (fugitive)',
+    \ '──────────────────────────────────────',
+    \ 'Space gs   Git status',
+    \ 'Space gd   Git diff',
+    \ 'Space gb   Git blame',
+    \ 'Space gl   Git log',
+    \ ']c / [c    Next/prev git hunk',
+    \ '',
+    \ 'GENERAL',
+    \ '──────────────────────────────────────',
+    \ 'Space w    Save file',
+    \ 'Space q    Quit',
+    \ 'Space x    Save and quit',
+    \ 'Space Space Clear search highlight',
+    \ 'Space sv   Reload vimrc',
+    \ '',
+    \ 'CLIPBOARD',
+    \ '──────────────────────────────────────',
+    \ 'Space y    Yank to system clipboard',
+    \ 'Space p    Paste from clipboard',
+    \ 'Space Y    Yank line to clipboard',
+    \ '',
+    \ 'LINTING (ALE)',
+    \ '──────────────────────────────────────',
+    \ 'Space af   Fix file (auto-format)',
+    \ ']a / [a    Next/prev lint error',
+    \ '',
+    \ 'VIM BASICS REMINDER',
+    \ '──────────────────────────────────────',
+    \ 'ciw        Change inner word',
+    \ 'ci"        Change inside quotes',
+    \ 'vip        Select paragraph',
+    \ '=          Auto-indent selection',
+    \ '.          Repeat last command',
+    \ '',
+    \ '══════════════════════════════════════',
+    \ 'Press Space ? to show this anytime',
     \ ]
+
+" Function to open cheatsheet in right split
+function! OpenCheatsheet()
+    " Open a new vertical split on the right
+    botright vnew
+    " Set buffer options
+    setlocal buftype=nofile
+    setlocal bufhidden=wipe
+    setlocal noswapfile
+    setlocal nobuflisted
+    setlocal nonumber
+    setlocal norelativenumber
+    setlocal nocursorline
+    setlocal signcolumn=no
+    setlocal filetype=cheatsheet
+    " Add content
+    call setline(1, g:cheatsheet_content)
+    " Make it read-only
+    setlocal nomodifiable
+    " Set width
+    vertical resize 42
+    " Go back to Startify window
+    wincmd h
+endfunction
+
+" Auto-open cheatsheet with Startify
+augroup StartifyCheatsheet
+    autocmd!
+    autocmd User StartifyReady call OpenCheatsheet()
+augroup END
+
+" Close cheatsheet when leaving Startify
+augroup StartifyLeave
+    autocmd!
+    autocmd BufLeave * if &filetype == 'startify' | only | endif
+augroup END
 
 " =============================================================================
 " Key Mappings
