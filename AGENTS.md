@@ -12,8 +12,8 @@ git clone https://github.com/hadrien/dot-vim.git ~/.vim
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
-# Open Vim and install plugins
-vim +PlugInstall +qall
+# Install plugins (non-interactive)
+vim --not-a-term -c 'PlugInstall --sync' -c 'qa!'
 ```
 
 ## Structure
@@ -21,6 +21,7 @@ vim +PlugInstall +qall
 ```
 ~/.vim/
 ├── vimrc              # Main configuration (Vim checks this as 2nd user vimrc)
+├── coc-settings.json  # coc.nvim/LSP configuration
 ├── autoload/          # vim-plug lives here
 ├── plugged/           # Installed plugins (git-ignored)
 └── undodir/           # Persistent undo history (git-ignored)
@@ -39,8 +40,11 @@ Managed with [vim-plug](https://github.com/junegunn/vim-plug).
 | Navigation | vim-easymotion, vim-tmux-navigator |
 | UI | vim-airline, vim-startify |
 | Colorschemes | gruvbox, dracula, molokai, nord, onedark, onehalf, catppuccin, rose-pine, everforest, sonokai, nightfox, tokyonight |
-| Linting | ALE |
-| Languages | vim-polyglot, vim-terraform, python-syntax, vim-yaml, vim-json, Dockerfile.vim |
+| LSP/Completion | coc.nvim (+ coc-pyright for Python) |
+| Linting | ALE (ruff, ty for Python) |
+| Testing | vim-test |
+| Python | python-syntax, vim-python-pep8-indent, vim-virtualenv |
+| Languages | vim-polyglot, vim-terraform, vim-yaml, vim-json, Dockerfile.vim |
 | Start Screen | vim-startify |
 
 ## Key Bindings
@@ -72,9 +76,36 @@ Leader key is `Space`.
 - `Space cs` - Colorscheme picker (live preview)
 - `jk` - Exit insert mode
 
+### Splits
+- `:sp` - Horizontal split
+- `:vsp` - Vertical split
+- `:q` - Close split
+- `Ctrl-h/j/k/l` - Navigate between splits
+- `Ctrl-Arrows` - Resize splits
+
+### LSP (coc.nvim)
+- `gd` - Go to definition
+- `Double-click` - Go to definition (mouse)
+- `gy` - Go to type definition
+- `gi` - Go to implementation
+- `gr` - Find references
+- `K` - Show documentation
+- `Space rn` - Rename symbol
+- `Space ca` - Code action
+- `]d` / `[d` - Next/prev diagnostic
+- `Ctrl-o` / `Ctrl-i` - Jump back/forward
+
 ### Linting (ALE)
-- `Space af` - Auto-fix file
+- Auto-fix on save (ruff for Python)
+- `Space af` - Manual fix
 - `]a` / `[a` - Next/prev lint error
+
+### Testing (vim-test)
+- `Space tn` - Run nearest test
+- `Space tf` - Run test file
+- `Space ts` - Run test suite
+- `Space tl` - Run last test
+- `Space tv` - Go to test file
 
 ## Dependencies
 
@@ -82,10 +113,11 @@ For best experience, install:
 
 ```bash
 # macOS
-brew install ripgrep fzf shellcheck
+brew install ripgrep fzf shellcheck node
 
-# Python linters/formatters
-pip install flake8 mypy black isort ruff
+# Python tools (ruff for linting/formatting, ty for type checking)
+pip install ruff
+uv tool install ty   # or: pipx install ty
 
 # Terraform
 brew install tflint
@@ -93,6 +125,11 @@ brew install tflint
 # Optional: Nerd Font for icons
 brew tap homebrew/cask-fonts
 brew install font-hack-nerd-font
+```
+
+After running `:PlugInstall` in Vim, install coc-pyright:
+```vim
+:CocInstall coc-pyright
 ```
 
 ## Features

@@ -137,8 +137,14 @@ Plug 'elzr/vim-json'
 " --- Dockerfile ---
 Plug 'ekalinin/Dockerfile.vim'
 
-" --- Completion (optional: enable if you want) ---
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" --- Completion (LSP) ---
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+" --- Testing ---
+Plug 'vim-test/vim-test'              " Run tests from Vim
+
+" --- Python Virtual Environment ---
+Plug 'jmcantrell/vim-virtualenv'      " Virtualenv detection & switching
 
 " --- Start Screen ---
 Plug 'mhinz/vim-startify'
@@ -173,7 +179,7 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 
 " --- ALE (Linting) ---
 let g:ale_linters = {
-\   'python': ['flake8', 'mypy', 'ruff'],
+\   'python': ['ruff', 'ty'],
 \   'terraform': ['terraform', 'tflint'],
 \   'sh': ['shellcheck'],
 \   'bash': ['shellcheck'],
@@ -183,12 +189,12 @@ let g:ale_linters = {
 \}
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'python': ['black', 'isort', 'ruff'],
+\   'python': ['ruff', 'ruff_format'],
 \   'terraform': ['terraform'],
 \   'json': ['jq'],
 \   'yaml': ['prettier'],
 \}
-let g:ale_fix_on_save = 0             " Set to 1 to auto-fix on save
+let g:ale_fix_on_save = 1             " Auto-fix on save
 let g:ale_sign_error = '>'
 let g:ale_sign_warning = '-'
 let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
@@ -210,6 +216,49 @@ let g:gitgutter_sign_removed = '-'
 
 " --- Python syntax ---
 let g:python_highlight_all = 1
+
+" --- vim-test (Testing) ---
+let g:test#strategy = 'vimterminal'   " Run tests in Vim terminal
+let g:test#python#runner = 'pytest'   " Use pytest
+let g:test#python#pytest#options = '-v'
+
+" --- vim-virtualenv ---
+" Auto-activate .venv in current directory (uv standard)
+let g:virtualenv_directory = '.'
+let g:virtualenv_name = '.venv'
+
+" --- coc.nvim (LSP) ---
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+function! ShowDocumentation()
+  if exists('*CocActionAsync') && CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Use tab for trigger completion with characters ahead and navigate
+inoremap <silent><expr> <TAB>
+      \ exists('*coc#pum#visible') && coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ exists('*coc#refresh') ? coc#refresh() : "\<Tab>"
+inoremap <silent><expr> <S-TAB>
+      \ exists('*coc#pum#visible') && coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> accept selected completion item or just newline
+inoremap <silent><expr> <CR>
+      \ exists('*coc#pum#visible') && coc#pum#visible() ? coc#pum#confirm() :
+      \ "\<C-g>u\<CR>"
+
+" Use <c-space> to trigger completion
+inoremap <silent><expr> <c-space> exists('*coc#refresh') ? coc#refresh() : ""
+
+" Highlight symbol under cursor on CursorHold
+autocmd CursorHold * silent! call CocActionAsync('highlight')
 
 " --- Startify (Start Screen with Cheatsheet) ---
 let g:startify_custom_header = []  " No ASCII art/logo
@@ -233,52 +282,54 @@ let g:startify_custom_footer = [
     \ '   CHEATSHEET                                                     Leader = Space',
     \ '   ══════════════════════════════════════════════════════════════════════════════',
     \ '',
-    \ '   FUZZY FINDING (fzf)                    FILE EXPLORER',
+    \ '   LSP (coc.nvim)                          TESTING (vim-test)',
     \ '   ─────────────────────────────────────  ─────────────────────────────────────',
-    \ '   Space f      Find files                Space e      Toggle NERDTree',
-    \ '   Space b      Switch buffer             Space n      Find current file in tree',
-    \ '   Space /      Search in project (rg)',
-    \ '   Space g      Git files only            BUFFERS & WINDOWS',
-    \ '   Space h      File history              ─────────────────────────────────────',
-    \ '   Space :      Command history           Shift-L      Next buffer',
-    \ '   Space l      Search lines              Shift-H      Previous buffer',
-    \ '   Ctrl-p       Find files (alt)          Space bd     Delete buffer',
-    \ '                                          Ctrl-h/j/k/l Navigate windows',
-    \ '   EDITING                                Ctrl-Arrows  Resize windows',
+    \ '   gd           Go to definition          Space tn     Run nearest test',
+    \ '   Double-click Go to definition          Space tf     Run test file',
+    \ '   gy           Go to type definition     Space ts     Run test suite',
+    \ '   gi           Go to implementation      Space tl     Run last test',
+    \ '   gr           Find references           Space tv     Go to test file',
+    \ '   K            Show documentation',
+    \ '   Space rn     Rename symbol             PYTHON',
+    \ '   Space ca     Code action               ─────────────────────────────────────',
+    \ '   ]d / [d      Next/prev diagnostic      Auto-fix on save (ruff)',
+    \ '   Ctrl-o/i     Jump back/forward         Type checking (ty)',
+    \ '   FUZZY FINDING (fzf)                    Venv auto-detected (.venv)',
     \ '   ─────────────────────────────────────',
-    \ '   gcc          Comment/uncomment line    GENERAL',
-    \ '   gc           Comment selection         ─────────────────────────────────────',
-    \ '   cs"''         Change " to '' (surround)  Space w      Save file',
-    \ '   ds"          Delete surrounding "      Space q      Quit',
-    \ '   ysiw"        Surround word with "      Space x      Save and quit',
-    \ '   S"           Surround selection        Space Space  Clear search highlight',
-    \ '   jk           Exit insert mode          Space sv     Reload vimrc',
-    \ '   < / >        Indent (keeps selection)  Space cs     Pick colorscheme',
+    \ '   Space f      Find files',
+    \ '   Space b      Switch buffer             FILE EXPLORER',
+    \ '   Space /      Search in project (rg)    ─────────────────────────────────────',
+    \ '   Space g      Git files only            Space e      Toggle NERDTree',
+    \ '   Space h      File history              Space n      Find current file in tree',
+    \ '   Space :      Command history',
+    \ '   Space l      Search lines              BUFFERS & WINDOWS',
+    \ '   Ctrl-p       Find files (alt)          ─────────────────────────────────────',
+    \ '                                          Shift-L      Next buffer',
+    \ '   EDITING                                Shift-H      Previous buffer',
+    \ '   ─────────────────────────────────────  Space bd     Delete buffer',
+    \ '   gcc          Comment/uncomment line    Ctrl-h/j/k/l Navigate splits',
+    \ '   gc           Comment selection         Ctrl-Arrows  Resize splits',
+    \ '   cs"''         Change " to '' (surround)  :sp          Horizontal split',
+    \ '   ds"          Delete surrounding "      :vsp         Vertical split',
+    \ '   ysiw"        Surround word with "      :q           Close split',
+    \ '   S"           Surround selection',
+    \ '   jk           Exit insert mode          GENERAL',
+    \ '   < / >        Indent (keeps selection)  ─────────────────────────────────────',
+    \ '                                          Space w      Save file',
+    \ '   NAVIGATION                             Space q      Quit',
+    \ '   ─────────────────────────────────────  Space x      Save and quit',
+    \ '   s{char}{char} Jump to any 2 chars      Space Space  Clear search highlight',
+    \ '   Space j/k    EasyMotion down/up        Space sv     Reload vimrc',
+    \ '   Ctrl-d/u     Half-page down/up         Space cs     Pick colorscheme',
     \ '                                          CLIPBOARD',
-    \ '   NAVIGATION                             ─────────────────────────────────────',
-    \ '   ─────────────────────────────────────  Space y      Yank to system clipboard',
-    \ '   s{char}{char} Jump to any 2 chars      Space p      Paste from clipboard',
-    \ '   Space j/k    EasyMotion down/up        Space Y      Yank line to clipboard',
-    \ '   Ctrl-d/u     Half-page down/up',
-    \ '   n / N        Next/prev search (centered)',
-    \ '                                          QUICKFIX LIST',
     \ '   GIT (fugitive)                         ─────────────────────────────────────',
-    \ '   ─────────────────────────────────────  ]q           Next quickfix item',
-    \ '   Space gs     Git status                [q           Previous quickfix item',
-    \ '   Space gd     Git diff',
+    \ '   ─────────────────────────────────────  Space y      Yank to system clipboard',
+    \ '   Space gs     Git status                Space p      Paste from clipboard',
+    \ '   Space gd     Git diff                  Space Y      Yank line to clipboard',
     \ '   Space gb     Git blame                 LINTING (ALE)',
     \ '   Space gl     Git log                   ─────────────────────────────────────',
-    \ '   ]c / [c      Next/prev git hunk        Space af     Fix file (auto-format)',
-    \ '                                          ]a           Next lint error',
-    \ '   VISUAL MODE                            [a           Previous lint error',
-    \ '   ─────────────────────────────────────',
-    \ '   J / K        Move selection down/up    VIM BASICS REMINDER',
-    \ '   < / >        Indent and reselect       ─────────────────────────────────────',
-    \ '                                          ciw          Change inner word',
-    \ '                                          ci"          Change inside quotes',
-    \ '                                          vip          Select paragraph',
-    \ '                                          =            Auto-indent selection',
-    \ '                                          .            Repeat last command',
+    \ '   ]c / [c      Next/prev git hunk        Space af     Fix file (manual)',
+    \ '                                          ]a / [a      Next/prev lint error',
     \ '',
     \ '   ══════════════════════════════════════════════════════════════════════════════',
     \ '   Press Space ? anytime to show this cheatsheet',
@@ -352,6 +403,28 @@ nnoremap <leader>gl :Git log<CR>
 nnoremap <leader>af :ALEFix<CR>
 nnoremap ]a :ALENextWrap<CR>
 nnoremap [a :ALEPreviousWrap<CR>
+
+" --- coc.nvim (LSP) ---
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+nmap <leader>rn <Plug>(coc-rename)
+nmap <leader>ca <Plug>(coc-codeaction-cursor)
+nnoremap <silent> K :call ShowDocumentation()<CR>
+" Navigate diagnostics (use ALE's ]a/[a for lint errors)
+nmap <silent> [d <Plug>(coc-diagnostic-prev)
+nmap <silent> ]d <Plug>(coc-diagnostic-next)
+
+" Double-click to go to definition (like Cmd+click in VS Code)
+nnoremap <2-LeftMouse> <LeftMouse>:call CocActionAsync('jumpDefinition')<CR>
+
+" --- vim-test (Testing) ---
+nnoremap <leader>tn :TestNearest<CR>
+nnoremap <leader>tf :TestFile<CR>
+nnoremap <leader>ts :TestSuite<CR>
+nnoremap <leader>tl :TestLast<CR>
+nnoremap <leader>tv :TestVisit<CR>
 
 " --- EasyMotion ---
 map <leader>j <Plug>(easymotion-j)

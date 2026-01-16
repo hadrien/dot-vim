@@ -1,0 +1,17 @@
+{
+  "suggest.noselect": false,
+  "suggest.enablePreselect": true,
+  "suggest.triggerAfterInsertEnter": true,
+
+  "diagnostic.enable": true,
+  "diagnostic.displayByAle": true,
+
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.useLibraryCodeForTypes": true,
+  "python.analysis.diagnosticMode": "openFilesOnly",
+
+  "python.venvPath": ".",
+  "python.venvFolders": [".venv", "venv", ".virtualenvs"],
+
+  "pyright.organizeimports.provider": "ruff"
+}
