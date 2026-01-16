@@ -81,6 +81,7 @@ Leader key is `Space`.
 - `:vsp` - Vertical split
 - `:q` - Close split
 - `Ctrl-h/j/k/l` - Navigate between splits
+- `Space Up/Down` - Cycle between panes
 - `Ctrl-Arrows` - Resize splits
 
 ### LSP (coc.nvim)
@@ -153,3 +154,9 @@ After running `:PlugInstall` in Vim, install coc-pyright:
 ## Local Overrides
 
 Create `~/.vim/vimrc.local` for machine-specific settings (git-ignored).
+
+## Agent Rules
+
+When modifying `~/.vim/vimrc`, always keep these in sync:
+1. **AGENTS.md** - Update the Key Bindings section
+2. **Startify cheatsheet** - Update `g:startify_custom_header` in vimrc (the ASCII cheatsheet shown on Vim startup)

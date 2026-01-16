@@ -298,8 +298,7 @@ let g:startify_custom_header = [
     \ '  Space -    Horizontal     │ BUFFERS                    │                            │',
     \ '  :q         Close          │────────────────────────────│                            │',
     \ '  Ctrl-hjkl  Navigate       │ Space ←→   Prev/next       │                            │',
-    \ '                            │ Space bd   Delete buffer   │                            │',
-    \ '                            │ Space bd   Delete buffer   │                            │',
+    \ '  Space ↑↓   Cycle panes    │ Space bd   Delete buffer   │                            │',
     \ '  ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════',
     \ '',
     \ ]
@@ -355,6 +354,9 @@ nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
+" Cycle panes with Space + up/down arrows
+nnoremap <leader><Up> <C-w>W
+nnoremap <leader><Down> <C-w>w
 
 " --- Buffers: Space + left/right arrows ---
 nnoremap <leader><Left> :bprevious<CR>
