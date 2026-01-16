@@ -37,7 +37,8 @@ Managed with [vim-plug](https://github.com/junegunn/vim-plug).
 | Git | vim-fugitive, vim-gitgutter |
 | Editing | vim-surround, vim-commentary, auto-pairs, vim-repeat |
 | Navigation | vim-easymotion, vim-tmux-navigator |
-| UI | vim-airline, gruvbox, dracula |
+| UI | vim-airline, vim-startify |
+| Colorschemes | gruvbox, dracula, molokai, nord, onedark, onehalf, catppuccin, rose-pine, everforest, sonokai, nightfox, tokyonight |
 | Linting | ALE |
 | Languages | vim-polyglot, vim-terraform, python-syntax, vim-yaml, vim-json, Dockerfile.vim |
 | Start Screen | vim-startify |
@@ -68,6 +69,7 @@ Leader key is `Space`.
 - `Space w` - Save
 - `Space q` - Quit
 - `Space ?` - Show cheatsheet (Startify)
+- `Space cs` - Colorscheme picker (live preview)
 - `jk` - Exit insert mode
 
 ### Linting (ALE)
@@ -92,6 +94,24 @@ brew install tflint
 brew tap homebrew/cask-fonts
 brew install font-hack-nerd-font
 ```
+
+## Features
+
+### Colorscheme Picker with Live Preview
+- `Space cs` opens a buffer with all available colorschemes
+- Navigate with `j`/`k` - theme changes instantly as you scroll
+- `Enter` to select and save, `Esc`/`q` to cancel
+- Selected colorscheme persists across sessions (saved to `~/.vim/.colorscheme`)
+- Airline theme automatically matches the colorscheme
+
+### Mouse Support
+- Full mouse/trackpad support enabled (`mouse=a`)
+- Click to position cursor, drag to select, scroll to navigate
+- Works with splits and window resizing
+
+### Startify Cheatsheet
+- Opening Vim without arguments shows recent files + full keybinding cheatsheet
+- Press `Space ?` anytime to return to the start screen
 
 ## Local Overrides
 
