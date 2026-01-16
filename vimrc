@@ -108,6 +108,16 @@ Plug 'vim-airline/vim-airline-themes'
 " --- Colorschemes ---
 Plug 'gruvbox-community/gruvbox'
 Plug 'dracula/vim', { 'as': 'dracula' }
+Plug 'tomasr/molokai'
+Plug 'arcticicestudio/nord-vim'
+Plug 'joshdick/onedark.vim'
+Plug 'sonph/onehalf', { 'rtp': 'vim' }
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }
+Plug 'rose-pine/vim', { 'as': 'rosepine' }
+Plug 'sainnhe/everforest'
+Plug 'sainnhe/sonokai'
+Plug 'EdenEast/nightfox.nvim'
+Plug 'folke/tokyonight.nvim'
 
 " --- Language Support ---
 Plug 'dense-analysis/ale'           " Async linting
@@ -243,7 +253,7 @@ let g:startify_custom_footer = [
     \ '   ysiw"        Surround word with "      Space x      Save and quit',
     \ '   S"           Surround selection        Space Space  Clear search highlight',
     \ '   jk           Exit insert mode          Space sv     Reload vimrc',
-    \ '   < / >        Indent (keeps selection)',
+    \ '   < / >        Indent (keeps selection)  Space cs     Pick colorscheme',
     \ '                                          CLIPBOARD',
     \ '   NAVIGATION                             ─────────────────────────────────────',
     \ '   ─────────────────────────────────────  Space y      Yank to system clipboard',
@@ -370,6 +380,16 @@ nnoremap [q :cprev<CR>
 
 " --- Show cheatsheet/start screen anytime ---
 nnoremap <leader>? :Startify<CR>
+
+" --- Colorscheme picker (FZF) ---
+nnoremap <leader>cs :call FZFColorscheme()<CR>
+function! FZFColorscheme()
+    call fzf#run(fzf#wrap({
+        \ 'source': getcompletion('', 'color'),
+        \ 'sink': 'colorscheme',
+        \ 'options': '--prompt="Colorscheme> " --preview-window=hidden'
+        \ }))
+endfunction
 
 " =============================================================================
 " File Type Specific Settings
