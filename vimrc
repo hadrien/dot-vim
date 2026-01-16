@@ -221,6 +221,8 @@ let g:python_highlight_all = 1
 let g:test#strategy = 'vimterminal'   " Run tests in Vim terminal
 let g:test#python#runner = 'pytest'   " Use pytest
 let g:test#python#pytest#options = '-v'
+" Run test suite from project root (works from any file)
+let g:test#project_root = getcwd()
 
 " --- vim-virtualenv ---
 " Auto-activate .venv in current directory (uv standard)
@@ -292,11 +294,11 @@ let g:startify_custom_header = [
     \ '                            │────────────────────────────│                            │',
     \ '  SPLITS                    │ Space e    Toggle NERDTree │                            │',
     \ '  ──────────────────────────│ Space n    Find in tree    │                            │',
-    \ '  :sp        Horizontal     │                            │                            │',
-    \ '  :vsp       Vertical       │ BUFFERS                    │                            │',
+    \ '  Space \    Vertical       │                            │                            │',
+    \ '  Space -    Horizontal     │ BUFFERS                    │                            │',
     \ '  :q         Close          │────────────────────────────│                            │',
-    \ '  Ctrl-hjkl  Navigate       │ Shift-L    Next buffer     │                            │',
-    \ '  Ctrl-Arrows Resize        │ Shift-H    Prev buffer     │                            │',
+    \ '  Ctrl-hjkl  Navigate       │ Space ←→   Prev/next       │                            │',
+    \ '                            │ Space bd   Delete buffer   │                            │',
     \ '                            │ Space bd   Delete buffer   │                            │',
     \ '  ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════',
     \ '',
@@ -346,22 +348,19 @@ nnoremap <C-p> :Files<CR>
 nnoremap <leader>e :NERDTreeToggle<CR>
 nnoremap <leader>n :NERDTreeFind<CR>
 
-" --- Buffer Navigation ---
-nnoremap <S-l> :bnext<CR>
-nnoremap <S-h> :bprevious<CR>
-nnoremap <leader>bd :bdelete<CR>
-
-" --- Window Navigation ---
+" --- Splits ---
+nnoremap <leader>\ :vsplit<CR>
+nnoremap <leader>- :split<CR>
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
 
-" --- Window Resizing ---
-nnoremap <C-Up> :resize -2<CR>
-nnoremap <C-Down> :resize +2<CR>
-nnoremap <C-Left> :vertical resize -2<CR>
-nnoremap <C-Right> :vertical resize +2<CR>
+" --- Buffers: Space + left/right arrows ---
+nnoremap <leader><Left> :bprevious<CR>
+nnoremap <leader><Right> :bnext<CR>
+
+nnoremap <leader>bd :bdelete<CR>
 
 " --- Move lines up/down ---
 vnoremap J :m '>+1<CR>gv=gv
@@ -385,26 +384,41 @@ nnoremap ]a :ALENextWrap<CR>
 nnoremap [a :ALEPreviousWrap<CR>
 
 " --- coc.nvim (LSP) ---
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-nmap <leader>rn <Plug>(coc-rename)
-nmap <leader>ca <Plug>(coc-codeaction-cursor)
-nnoremap <silent> K :call ShowDocumentation()<CR>
+" Only enable in non-terminal buffers
+function! s:is_terminal()
+    return &buftype ==# 'terminal'
+endfunction
+
+nmap <silent><expr> gd <SID>is_terminal() ? 'gd' : "\<Plug>(coc-definition)"
+nmap <silent><expr> gy <SID>is_terminal() ? 'gy' : "\<Plug>(coc-type-definition)"
+nmap <silent><expr> gi <SID>is_terminal() ? 'gi' : "\<Plug>(coc-implementation)"
+nmap <silent><expr> gr <SID>is_terminal() ? 'gr' : "\<Plug>(coc-references)"
+nmap <expr> <leader>rn <SID>is_terminal() ? '' : "\<Plug>(coc-rename)"
+nmap <expr> <leader>ca <SID>is_terminal() ? '' : "\<Plug>(coc-codeaction-cursor)"
+nnoremap <silent> K :if &buftype !=# 'terminal' <Bar> call ShowDocumentation() <Bar> endif<CR>
 " Navigate diagnostics (use ALE's ]a/[a for lint errors)
-nmap <silent> [d <Plug>(coc-diagnostic-prev)
-nmap <silent> ]d <Plug>(coc-diagnostic-next)
+nmap <silent><expr> [d <SID>is_terminal() ? '[d' : "\<Plug>(coc-diagnostic-prev)"
+nmap <silent><expr> ]d <SID>is_terminal() ? ']d' : "\<Plug>(coc-diagnostic-next)"
 
 " Double-click to go to definition (like Cmd+click in VS Code)
-nnoremap <2-LeftMouse> <LeftMouse>:call CocActionAsync('jumpDefinition')<CR>
+nnoremap <silent> <2-LeftMouse> <LeftMouse>:if &buftype !=# 'terminal' <Bar> call CocActionAsync('jumpDefinition') <Bar> endif<CR>
 
 " --- vim-test (Testing) ---
 nnoremap <leader>tn :TestNearest<CR>
 nnoremap <leader>tf :TestFile<CR>
-nnoremap <leader>ts :TestSuite<CR>
+nnoremap <leader>ts :call RunTestSuite()<CR>
 nnoremap <leader>tl :TestLast<CR>
 nnoremap <leader>tv :TestVisit<CR>
+
+" Run test suite from any file (falls back to pytest if not in a test file)
+function! RunTestSuite()
+    if test#exists()
+        TestSuite
+    else
+        " Fallback: run pytest directly from project root
+        botright terminal pytest -v
+    endif
+endfunction
 
 " --- EasyMotion ---
 map <leader>j <Plug>(easymotion-j)
@@ -608,4 +622,7 @@ augroup general_settings
 
     " Auto-reload files when changed externally
     autocmd FocusGained,BufEnter * checktime
+
+    " Terminal buffer settings: no line numbers, disable coc mappings
+    autocmd TerminalOpen * setlocal nonumber norelativenumber signcolumn=no
 augroup END
