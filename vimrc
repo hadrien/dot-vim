@@ -201,7 +201,7 @@ let g:terraform_fmt_on_save=1
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#ale#enabled = 1
-let g:airline_theme='gruvbox'
+" Airline theme auto-matches colorscheme (set below in ApplyColorscheme)
 
 " --- GitGutter ---
 let g:gitgutter_sign_added = '+'
@@ -395,16 +395,60 @@ function! LoadSavedColorscheme()
         let l:name = readfile(g:colorscheme_file)[0]
         try
             execute 'colorscheme' l:name
+            call SetAirlineTheme(l:name)
         catch
             colorscheme gruvbox
+            call SetAirlineTheme('gruvbox')
         endtry
     else
         colorscheme gruvbox
+        call SetAirlineTheme('gruvbox')
     endif
+endfunction
+
+function! SetAirlineTheme(colorscheme)
+    " Map colorscheme names to airline themes
+    let l:airline_map = {
+        \ 'gruvbox': 'gruvbox',
+        \ 'dracula': 'dracula',
+        \ 'nord': 'nord',
+        \ 'onedark': 'onedark',
+        \ 'onehalfdark': 'onehalfdark',
+        \ 'onehalflight': 'onehalflight',
+        \ 'catppuccin_mocha': 'catppuccin_mocha',
+        \ 'catppuccin_latte': 'catppuccin_latte',
+        \ 'catppuccin_frappe': 'catppuccin_frappe',
+        \ 'catppuccin_macchiato': 'catppuccin_macchiato',
+        \ 'everforest': 'everforest',
+        \ 'sonokai': 'sonokai',
+        \ 'tokyonight': 'tokyonight',
+        \ 'molokai': 'molokai',
+        \ }
+    " Try exact match, then try 'base16' as fallback, then 'dark'
+    if has_key(l:airline_map, a:colorscheme)
+        let l:theme = l:airline_map[a:colorscheme]
+    else
+        " Try to find a matching airline theme
+        let l:available = getcompletion('', 'airline_theme')
+        if index(l:available, a:colorscheme) >= 0
+            let l:theme = a:colorscheme
+        elseif a:colorscheme =~ 'light'
+            let l:theme = 'papercolor'
+        else
+            let l:theme = 'dark'
+        endif
+    endif
+    try
+        execute 'AirlineTheme' l:theme
+    catch
+        " Fallback if theme doesn't exist
+        silent! AirlineTheme dark
+    endtry
 endfunction
 
 function! ApplyColorscheme(name)
     execute 'colorscheme' a:name
+    call SetAirlineTheme(a:name)
     redraw
 endfunction
 
@@ -415,6 +459,7 @@ endfunction
 function! ColorschemeCancel()
     if g:colorscheme_before_preview != ''
         execute 'colorscheme' g:colorscheme_before_preview
+        call SetAirlineTheme(g:colorscheme_before_preview)
     endif
 endfunction
 
