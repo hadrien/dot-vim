@@ -149,6 +149,9 @@ Plug 'jmcantrell/vim-virtualenv'      " Virtualenv detection & switching
 " --- Start Screen ---
 Plug 'mhinz/vim-startify'
 
+" --- Obsession ---
+Plug 'tpope/vim-obsession'
+
 call plug#end()
 
 " =============================================================================
@@ -534,18 +537,18 @@ endfunction
 
 function! FZFColorscheme()
     let g:colorscheme_before_preview = get(g:, 'colors_name', 'gruvbox')
-    
+
     " Write colorscheme list to temp file for fzf
     let l:colors = getcompletion('', 'color')
     let l:tempfile = tempname()
     call writefile(l:colors, l:tempfile)
-    
+
     " Use fzf with --bind to call back into vim for live preview
     let l:choice = system('cat ' . l:tempfile . ' | fzf --prompt="Colorscheme> " --preview-window=hidden --bind "focus:execute-silent(echo {} > /tmp/vim_colorscheme_preview)"')
     let l:choice = substitute(l:choice, '\n', '', 'g')
-    
+
     call delete(l:tempfile)
-    
+
     if l:choice != ''
         call SaveColorscheme(l:choice)
     else
@@ -560,25 +563,25 @@ function! FZFColorschemeWithPreview()
     let g:colorscheme_list = getcompletion('', 'color')
     let g:colorscheme_idx = index(g:colorscheme_list, g:colorscheme_before_preview)
     if g:colorscheme_idx < 0 | let g:colorscheme_idx = 0 | endif
-    
+
     " Open a scratch buffer with colorscheme list
     botright new
     setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
     setlocal cursorline nonumber norelativenumber signcolumn=no
     call setline(1, g:colorscheme_list)
     execute 'normal! ' . (g:colorscheme_idx + 1) . 'G'
-    
+
     " Apply colorscheme on cursor move
     autocmd CursorMoved <buffer> call ApplyColorscheme(getline('.'))
-    
+
     " Keymaps for this buffer
     nnoremap <buffer> <CR> :call ColorschemeSelected(getline('.'))<CR>:bd<CR>
     nnoremap <buffer> <Esc> :call ColorschemeCancel()<CR>:bd<CR>
     nnoremap <buffer> q :call ColorschemeCancel()<CR>:bd<CR>
-    
+
     " Initial preview
     call ApplyColorscheme(getline('.'))
-    
+
     echo "j/k: navigate | Enter: select | Esc/q: cancel"
 endfunction
 
@@ -586,6 +589,28 @@ nnoremap <leader>cs :call FZFColorschemeWithPreview()<CR>
 
 " Load saved colorscheme on startup
 call LoadSavedColorscheme()
+
+" =============================================================================
+" Session Management (vim-obsession)
+" =============================================================================
+" If .session.vim exists in CWD, restore it and start tracking with Obsession.
+" Otherwise, let Startify show its start screen and start Obsession tracking.
+" In all cases, Obsession tracks .session.vim in CWD.
+
+function! SetupSession()
+    let l:session_file = getcwd() . '/.session.vim'
+    if filereadable(l:session_file)
+        " Disable Startify for this launch
+        let g:startify_disable_at_vimenter = 1
+        " Source the session file to restore buffers/windows
+        execute 'source ' . l:session_file
+    endif
+    " Always start Obsession tracking (creates file if needed)
+    execute 'Obsess ' . l:session_file
+endfunction
+
+" Run after VimEnter to ensure plugins are loaded
+autocmd VimEnter * call SetupSession()
 
 " =============================================================================
 " File Type Specific Settings

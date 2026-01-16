@@ -46,6 +46,7 @@ Managed with [vim-plug](https://github.com/junegunn/vim-plug).
 | Python | python-syntax, vim-python-pep8-indent, vim-virtualenv |
 | Languages | vim-polyglot, vim-terraform, vim-yaml, vim-json, Dockerfile.vim |
 | Start Screen | vim-startify |
+| Sessions | vim-obsession (auto-save/restore) |
 
 ## Key Bindings
 
@@ -150,6 +151,12 @@ After running `:PlugInstall` in Vim, install coc-pyright:
 ### Startify Cheatsheet
 - Opening Vim without arguments shows recent files + full keybinding cheatsheet
 - Press `Space ?` anytime to return to the start screen
+
+### Automatic Session Management
+- If `.session.vim` exists in the current directory, it is auto-loaded and Obsession starts tracking
+- If no `.session.vim` exists, Startify shows normally and Obsession starts tracking (creates the file)
+- Session is saved continuously (on buffer switch and quit) - resilient to crashes
+- To stop tracking: `:Obsess` (toggle) or `:Obsess!` (stop and delete)
 
 ## Local Overrides
 
