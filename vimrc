@@ -450,7 +450,7 @@ function! FZFColorschemeWithPreview()
     " Open a scratch buffer with colorscheme list
     botright new
     setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
-    setlocal cursorline
+    setlocal cursorline nonumber norelativenumber signcolumn=no
     call setline(1, g:colorscheme_list)
     execute 'normal! ' . (g:colorscheme_idx + 1) . 'G'
     
