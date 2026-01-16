@@ -403,69 +403,72 @@ function! LoadSavedColorscheme()
     endif
 endfunction
 
-function! PreviewColorscheme(name)
+function! ApplyColorscheme(name)
     execute 'colorscheme' a:name
+    redraw
 endfunction
 
-function! ColorschemeOnExit()
-    " Restore original colorscheme if cancelled (no selection)
-    if exists('g:colorscheme_before_preview') && g:colorscheme_before_preview != ''
+function! ColorschemeSelected(name)
+    call SaveColorscheme(a:name)
+endfunction
+
+function! ColorschemeCancel()
+    if g:colorscheme_before_preview != ''
         execute 'colorscheme' g:colorscheme_before_preview
     endif
 endfunction
 
-function! ColorschemeSelected(name)
-    let g:colorscheme_before_preview = ''  " Clear so exit handler doesn't restore
-    call SaveColorscheme(a:name)
-endfunction
-
 function! FZFColorscheme()
-    " Remember current colorscheme to restore if cancelled
     let g:colorscheme_before_preview = get(g:, 'colors_name', 'gruvbox')
-    call fzf#run(fzf#wrap({
-        \ 'source': getcompletion('', 'color'),
-        \ 'sink': function('ColorschemeSelected'),
-        \ 'options': ['--prompt=Colorscheme> ', '--preview-window=hidden', '--bind', 'focus:execute-silent(vim --servername ' . v:servername . ' --remote-expr "PreviewColorscheme(\"{}\")")']
-        \ }))
-endfunction
-
-" Alternative: simpler approach using built-in fzf preview mechanism
-function! FZFColorschemeSimple()
-    let g:colorscheme_before_preview = get(g:, 'colors_name', 'gruvbox')
+    
+    " Write colorscheme list to temp file for fzf
     let l:colors = getcompletion('', 'color')
-    let l:current_idx = index(l:colors, g:colorscheme_before_preview)
+    let l:tempfile = tempname()
+    call writefile(l:colors, l:tempfile)
     
-    " Use input() loop for live preview
-    echohl Title | echo "Colorscheme picker (j/k to navigate, Enter to select, Esc to cancel)" | echohl None
-    let l:idx = l:current_idx >= 0 ? l:current_idx : 0
+    " Use fzf with --bind to call back into vim for live preview
+    let l:choice = system('cat ' . l:tempfile . ' | fzf --prompt="Colorscheme> " --preview-window=hidden --bind "focus:execute-silent(echo {} > /tmp/vim_colorscheme_preview)"')
+    let l:choice = substitute(l:choice, '\n', '', 'g')
     
-    while 1
-        execute 'colorscheme' l:colors[l:idx]
-        redraw
-        echo "(" . (l:idx + 1) . "/" . len(l:colors) . ") " . l:colors[l:idx]
-        
-        let l:char = getchar()
-        if l:char == 27  " Esc
-            execute 'colorscheme' g:colorscheme_before_preview
-            echo "Cancelled"
-            return
-        elseif l:char == 13  " Enter
-            call SaveColorscheme(l:colors[l:idx])
-            echo "Selected: " . l:colors[l:idx]
-            return
-        elseif l:char == 106 || l:char == "\<Down>"  " j or Down
-            let l:idx = (l:idx + 1) % len(l:colors)
-        elseif l:char == 107 || l:char == "\<Up>"  " k or Up
-            let l:idx = (l:idx - 1 + len(l:colors)) % len(l:colors)
-        elseif l:char == 103  " g - go to start
-            let l:idx = 0
-        elseif l:char == 71  " G - go to end
-            let l:idx = len(l:colors) - 1
-        endif
-    endwhile
+    call delete(l:tempfile)
+    
+    if l:choice != ''
+        call SaveColorscheme(l:choice)
+    else
+        " Cancelled - restore original
+        execute 'colorscheme' g:colorscheme_before_preview
+    endif
 endfunction
 
-nnoremap <leader>cs :call FZFColorschemeSimple()<CR>
+" Timer-based live preview picker (works reliably)
+function! FZFColorschemeWithPreview()
+    let g:colorscheme_before_preview = get(g:, 'colors_name', 'gruvbox')
+    let g:colorscheme_list = getcompletion('', 'color')
+    let g:colorscheme_idx = index(g:colorscheme_list, g:colorscheme_before_preview)
+    if g:colorscheme_idx < 0 | let g:colorscheme_idx = 0 | endif
+    
+    " Open a scratch buffer with colorscheme list
+    botright new
+    setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
+    setlocal cursorline
+    call setline(1, g:colorscheme_list)
+    execute 'normal! ' . (g:colorscheme_idx + 1) . 'G'
+    
+    " Apply colorscheme on cursor move
+    autocmd CursorMoved <buffer> call ApplyColorscheme(getline('.'))
+    
+    " Keymaps for this buffer
+    nnoremap <buffer> <CR> :call ColorschemeSelected(getline('.'))<CR>:bd<CR>
+    nnoremap <buffer> <Esc> :call ColorschemeCancel()<CR>:bd<CR>
+    nnoremap <buffer> q :call ColorschemeCancel()<CR>:bd<CR>
+    
+    " Initial preview
+    call ApplyColorscheme(getline('.'))
+    
+    echo "j/k: navigate | Enter: select | Esc/q: cancel"
+endfunction
+
+nnoremap <leader>cs :call FZFColorschemeWithPreview()<CR>
 
 " Load saved colorscheme on startup
 call LoadSavedColorscheme()
