@@ -151,7 +151,7 @@ call plug#end()
 
 " --- Colorscheme ---
 set background=dark
-silent! colorscheme gruvbox
+" Colorscheme is loaded later via LoadSavedColorscheme()
 
 " --- FZF ---
 " Use ripgrep if available for faster searching
@@ -381,15 +381,39 @@ nnoremap [q :cprev<CR>
 " --- Show cheatsheet/start screen anytime ---
 nnoremap <leader>? :Startify<CR>
 
-" --- Colorscheme picker (FZF) ---
-nnoremap <leader>cs :call FZFColorscheme()<CR>
+" --- Colorscheme picker (FZF) with persistence ---
+let g:colorscheme_file = expand('~/.vim/.colorscheme')
+
+function! SaveColorscheme(name)
+    call writefile([a:name], g:colorscheme_file)
+    execute 'colorscheme' a:name
+endfunction
+
+function! LoadSavedColorscheme()
+    if filereadable(g:colorscheme_file)
+        let l:name = readfile(g:colorscheme_file)[0]
+        try
+            execute 'colorscheme' l:name
+        catch
+            colorscheme gruvbox
+        endtry
+    else
+        colorscheme gruvbox
+    endif
+endfunction
+
 function! FZFColorscheme()
     call fzf#run(fzf#wrap({
         \ 'source': getcompletion('', 'color'),
-        \ 'sink': 'colorscheme',
+        \ 'sink': function('SaveColorscheme'),
         \ 'options': '--prompt="Colorscheme> " --preview-window=hidden'
         \ }))
 endfunction
+
+nnoremap <leader>cs :call FZFColorscheme()<CR>
+
+" Load saved colorscheme on startup
+call LoadSavedColorscheme()
 
 " =============================================================================
 " File Type Specific Settings
