@@ -57,6 +57,9 @@ set autoread                  " Auto reload changed files
 set undofile                  " Persistent undo
 set undodir=~/.vim/undodir    " Undo directory
 
+" --- Session options (exclude 'options' to prevent syntax issues) ---
+set sessionoptions=buffers,curdir,folds,tabpages,winsize
+
 " Create undo directory if it doesn't exist
 if !isdirectory($HOME."/.vim/undodir")
     call mkdir($HOME."/.vim/undodir", "p", 0700)
@@ -153,6 +156,10 @@ Plug 'mhinz/vim-startify'
 Plug 'tpope/vim-obsession'
 
 call plug#end()
+
+" Enable syntax and filetype AFTER plugins are loaded
+syntax enable
+filetype plugin indent on
 
 " =============================================================================
 " Plugin Configuration
@@ -611,6 +618,9 @@ endfunction
 
 " Run after VimEnter to ensure plugins are loaded
 autocmd VimEnter * call SetupSession()
+
+" Fix filetype detection after session restore
+autocmd SessionLoadPost * filetype detect
 
 " =============================================================================
 " File Type Specific Settings
