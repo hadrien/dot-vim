@@ -292,7 +292,7 @@ let g:startify_custom_header = [
     \ '                            │ FUZZY FINDING              │ Space y    Yank to system  │ ]d / [d    Next/prev diag',
     \ '  NAVIGATION                │────────────────────────────│ Space p    Paste system    │ Ctrl-o/i   Jump back/fwd',
     \ '  ──────────────────────────│ Space f    Files           │ Space Y    Yank line       │',
-    \ '  s{c}{c}    EasyMotion     │ Space b    Buffers         │                            │ LINTING',
+    \ '  s{c}{c}    EasyMotion     │ Space b    Buffers         │ Space ag   OpenCode @ref   │ LINTING',
     \ '  Space j/k  EasyMotion ↓↑  │ Space /    Search (rg)     │ TESTING                    │────────────────────────────',
     \ '  Ctrl-d/u   Half-page ↓↑   │ Space g    Git files       │────────────────────────────│ Space af   Fix file',
     \ '  n / N      Search next    │ Space h    File history    │ Space tn   Nearest test    │ ]a / [a    Next/prev error',
@@ -452,6 +452,22 @@ nnoremap <leader>Y "+Y
 " --- Paste from system clipboard ---
 nnoremap <leader>p "+p
 nnoremap <leader>P "+P
+
+" --- OpenCode file reference (copy @file#L<line> to clipboard) ---
+function! CopyOpenCodeRef() range
+    let filepath = expand('%:.')  " Relative path from cwd
+    if a:firstline == a:lastline
+        let ref = '@' . filepath . '#L' . a:firstline
+    else
+        let ref = '@' . filepath . '#L' . a:firstline . '-' . a:lastline
+    endif
+    let @+ = ref  " System clipboard
+    let @" = ref  " Vim clipboard
+    echo 'Copied: ' . ref
+endfunction
+
+nnoremap <leader>ag :call CopyOpenCodeRef()<CR>
+vnoremap <leader>ag :call CopyOpenCodeRef()<CR>
 
 " --- Quick fix list navigation ---
 nnoremap ]q :cnext<CR>
