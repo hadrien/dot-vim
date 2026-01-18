@@ -109,6 +109,10 @@ Leader key is `Space`.
 - `Space tl` - Run last test
 - `Space tv` - Go to test file
 
+### Terminal
+- `Ctrl-w N` - Enter Normal mode (for visual selection, copy, search)
+- `i` or `a` - Return to terminal mode
+
 ### OpenCode Integration
 - `Space ag` - Copy file reference to clipboard (`@file#L<line>` or `@file#L<start>-<end>` for visual selection)
 
