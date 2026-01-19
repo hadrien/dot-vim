@@ -8,9 +8,12 @@ if [ -d ~/.vim ]; then
     mv ~/.vim ~/.vim.backup
 fi
 
-# Clone the repository
-echo "Cloning dot-vim..."
-git clone https://github.com/hadrien/dot-vim.git ~/.vim
+# Download and extract the repository
+echo "Downloading dot-vim..."
+curl -fsSL https://github.com/hadrien/dot-vim/archive/refs/heads/main.zip -o /tmp/dot-vim.zip
+unzip -q /tmp/dot-vim.zip -d /tmp
+mv /tmp/dot-vim-main ~/.vim
+rm /tmp/dot-vim.zip
 
 # Install vim-plug
 echo "Installing vim-plug..."
