@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Check for git (required by vim-plug to install plugins)
+if ! command -v git &> /dev/null; then
+    echo "Error: git is required but not installed."
+    echo "Please install git first: https://git-scm.com/downloads"
+    exit 1
+fi
+
 # Backup existing ~/.vim if it exists
 if [ -d ~/.vim ]; then
     echo "Backing up existing ~/.vim to ~/.vim.backup"
@@ -8,12 +15,9 @@ if [ -d ~/.vim ]; then
     mv ~/.vim ~/.vim.backup
 fi
 
-# Download and extract the repository
-echo "Downloading dot-vim..."
-curl -fsSL https://github.com/hadrien/dot-vim/archive/refs/heads/main.zip -o /tmp/dot-vim.zip
-unzip -q /tmp/dot-vim.zip -d /tmp
-mv /tmp/dot-vim-main ~/.vim
-rm /tmp/dot-vim.zip
+# Clone the repository
+echo "Cloning dot-vim..."
+git clone https://github.com/hadrien/dot-vim.git ~/.vim
 
 # Install vim-plug
 echo "Installing vim-plug..."
