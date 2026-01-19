@@ -18,7 +18,7 @@ rm /tmp/dot-vim.zip
 # Install vim-plug
 echo "Installing vim-plug..."
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    https://raw.githubusercontent.com/junegunn/vim-plug/main/plug.vim
 
 # Install plugins
 echo "Installing plugins..."
