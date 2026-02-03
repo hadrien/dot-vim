@@ -161,7 +161,8 @@ After running `:PlugInstall` in Vim, install coc-pyright:
 
 ### Automatic Session Management
 - If `.session.vim` exists in the current directory, it is auto-loaded and Obsession starts tracking
-- If no `.session.vim` exists, Startify shows normally and Obsession starts tracking (creates the file)
+- If no `.session.vim` exists, Startify shows normally (no session auto-created)
+- To manually start session tracking: `:Obsess .session.vim`
 - Session is saved continuously (on buffer switch and quit) - resilient to crashes
 - To stop tracking: `:Obsess` (toggle) or `:Obsess!` (stop and delete)
 

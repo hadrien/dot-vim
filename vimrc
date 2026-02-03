@@ -617,8 +617,7 @@ call LoadSavedColorscheme()
 " Session Management (vim-obsession)
 " =============================================================================
 " If .session.vim exists in CWD, restore it and start tracking with Obsession.
-" Otherwise, let Startify show its start screen and start Obsession tracking.
-" In all cases, Obsession tracks .session.vim in CWD.
+" Otherwise, let Startify show its start screen (no auto-create of session).
 
 function! SetupSession()
     let l:session_file = getcwd() . '/.session.vim'
@@ -627,9 +626,9 @@ function! SetupSession()
         let g:startify_disable_at_vimenter = 1
         " Source the session file to restore buffers/windows
         execute 'source ' . l:session_file
+        " Start Obsession tracking for the existing session
+        execute 'Obsess ' . l:session_file
     endif
-    " Always start Obsession tracking (creates file if needed)
-    execute 'Obsess ' . l:session_file
 endfunction
 
 " Run after VimEnter to ensure plugins are loaded
